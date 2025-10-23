@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Recenzii - Energize</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #fff8e1; padding: 20px; }
+    h2 { color: #ff9800; text-align: center; margin-top: 10px; }
+    .recenzie { background: #fff; padding: 15px; margin-bottom: 10px; border-radius: 6px; box-shadow: 0 0 5px #ccc; }
+    .recenzie strong { color: #333; }
+    .recenzie button {
+      background: #e53935; color: white; border: none; padding: 8px 12px;
+      border-radius: 4px; cursor: pointer; float: right;
+    }
+    .success { background: #dff0d8; padding: 10px; border-radius: 4px; color: #3c763d; margin-top: 10px; text-align: center; }
+    #login { max-width: 400px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+    #adminPanel { display: none; }
+    #logo { text-align: center; margin-bottom: 10px; }
+    #logo img { height: 60px; }
+  </style>
+</head>
+<body>
+
+<div id="logo">
+  <img src="https://energizeelectricalservice.ro/files/dynamicContent/sites/xed9b0/images/ro/webpage_24/mh3u7jmu/element_1341/ChatGPT-Image-May-17-2025-06_09_09-AM.png" alt="Energize Logo">
+</div>
+
+<h2>Panou Admin - Recenzii</h2>
+
+<div id="login">
+  <input type="password" id="parola" placeholder="Parolă admin">
+  <button onclick="verificaParola()">Accesează</button>
+</div>
+
+<div id="adminPanel">
+  <div id="listaRecenzii"></div>
+  <div id="confirmare" class="success" style="display:none;">Recenzia a fost ștearsă!</div>
+</div>
+
+<script>
+  const parolaCorecta = "energize2024";
+
+  function verificaParola() {
+    const parola = document.getElementById("parola").value;
+    if (parola === parolaCorecta) {
+      document.getElementById("login").style.display = "none";
+      document.getElementById("adminPanel").style.display = "block";
+      incarcaRecenzii();
+    } else {
+      alert("Parolă greșită!");
+    }
+  }
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBSQRQRHKeHAjH_22MxqVk-yD9piam3T7A",
+    authDomain: "energize-electrical-service.firebaseapp.com",
+    projectId: "energize-electrical-service",
+    storageBucket: "energize-electrical-service.firebasestorage.app",
+    messagingSenderId: "488528476137",
+    appId: "1:488528476137:web:88e77de963f04d30e27d78",
+    measurementId: "G-7MQR86TDCF"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  function incarcaRecenzii() {
+    db.collection("recenzii").orderBy("date", "desc").onSnapshot(snapshot => {
+      const container = document.getElementById("listaRecenzii");
+      container.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.className = "recenzie";
+        div.innerHTML = `
+          <strong>${data.name}</strong> (${data.rating}⭐)<br>
+          <em>${data.message}</em>
+          <button onclick="stergeRecenzie('${doc.id}')">Șterge</button>
+        `;
+        container.appendChild(div);
+      });
+    });
+  }
+
+  function stergeRecenzie(id) {
+    if (confirm("Sigur vrei să ștergi această recenzie?")) {
+      db.collection("recenzii").doc(id).delete().then(() => {
+        document.getElementById("confirmare").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("confirmare").style.display = "none";
+        }, 3000);
+      });
+    }
+  }
+</script>
+
+</body>
+</html>
