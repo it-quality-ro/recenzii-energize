@@ -6,7 +6,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 </head>
 <body>
-  <button onclick="salveaza()">Salvează test</button>
+  <h2>Test recenzie Firebase</h2>
+  <button onclick="salveaza()">Trimite recenzie de test</button>
 
   <script>
     const firebaseConfig = {
@@ -24,8 +25,8 @@
 
     function salveaza() {
       db.collection("recenzii").add({
-        name: "Test",
-        message: "Funcționează!",
+        name: "Test Darius",
+        message: "Aceasta este o recenzie de test",
         rating: 5,
         date: new Date()
       }).then(() => {
