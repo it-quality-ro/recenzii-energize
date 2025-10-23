@@ -5,172 +5,78 @@
   <title>Recenzii Energize</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #fefae0;
-      margin: 0;
-      padding: 20px;
+    body { font-family: 'Segoe UI', sans-serif; background: #fefae0; padding: 20px; }
+    h2 { color: #ff9800; text-align: center; }
+    form { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px #ccc; max-width: 500px; margin: auto; }
+    input, textarea, select, button {
+      width: 100%; margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; border-radius: 4px;
     }
-    form {
-      max-width: 600px;
-      margin: auto;
-      background: #fff8dc;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.05);
-      border: 1px solid #fce38a;
-    }
-    h2 {
-      text-align: center;
-      color: #FFC107;
-      margin-bottom: 20px;
-    }
-    label {
-      font-weight: bold;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    button {
-      background: #FFC107;
-      color: black;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    #successMessage {
-      display: none;
-      text-align: center;
-      color: green;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-    #recenziiContainer {
-      max-width: 800px;
-      margin: 60px auto 40px auto;
-    }
-    .recenzie {
-      background: #ffffff;
-      padding: 20px;
-      margin: 20px 0;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      border-left: 5px solid #FFC107;
-    }
-    .recenzie p {
-      margin: 5px 0;
-    }
+    button { background: #ff9800; color: white; font-weight: bold; border: none; cursor: pointer; }
+    .success { background: #dff0d8; padding: 10px; border-radius: 4px; color: #3c763d; margin-top: 10px; text-align: center; }
   </style>
 </head>
 <body>
 
-<form id="reviewForm">
-  <h2>Lasă o recenzie pentru Energize</h2>
-
-  <label>Nume:</label>
-  <input type="text" id="name" required>
-
-  <label>Tipul lucrării:</label>
-  <select id="type" required>
-    <option value="Instalație nouă">Instalație nouă</option>
-    <option value="Reparație">Reparație</option>
-    <option value="Verificare">Verificare</option>
-    <option value="Automatizare">Automatizare</option>
-  </select>
-
-  <label>Recenzie:</label>
-  <textarea id="message" rows="5" required></textarea>
-
-  <label>Evaluare:</label>
+<h2>Lasă o recenzie</h2>
+<form onsubmit="trimiteRecenzie(event)">
+  <input type="text" id="name" placeholder="Nume" required>
+  <textarea id="message" placeholder="Mesajul tău" required></textarea>
   <select id="rating" required>
+    <option value="">Rating</option>
     <option value="5">⭐⭐⭐⭐⭐</option>
     <option value="4">⭐⭐⭐⭐</option>
     <option value="3">⭐⭐⭐</option>
     <option value="2">⭐⭐</option>
     <option value="1">⭐</option>
   </select>
-
   <button type="submit">Trimite recenzia</button>
+  <div id="confirmare" class="success" style="display:none;">Recenzia a fost trimisă și emailul a fost expediat!</div>
 </form>
 
-<div id="successMessage">Recenzia a fost trimisă cu succes!</div>
-<div id="recenziiContainer"></div>
-
 <script>
+  // 🔧 Config Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBSQRQRHKeHAjH_22MxqVk-yD9piam3T7A",
     authDomain: "energize-electrical-service.firebaseapp.com",
     projectId: "energize-electrical-service",
-    storageBucket: "energize-electrical-service.appspot.com",
+    storageBucket: "energize-electrical-service.firebasestorage.app",
     messagingSenderId: "488528476137",
-    appId: "1:488528476137:web:80527006fad45feae27d78",
-    measurementId: "G-J6HJM5SVCL"
+    appId: "1:488528476137:web:88e77de963f04d30e27d78",
+    measurementId: "G-7MQR86TDCF"
   };
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  document.getElementById("reviewForm").addEventListener("submit", function(e) {
-    e.preventDefault();
+  // 🔧 EmailJS init
+  emailjs.init("NAqbqXyEwgThxJl0F");
 
-    const name = document.getElementById("name").value.trim();
-    const type = document.getElementById("type").value;
-    const message = document.getElementById("message").value.trim();
-    const rating = parseInt(document.getElementById("rating").value);
+  function trimiteRecenzie(event) {
+    event.preventDefault();
+    const name = document.getElementById("name").value;
+    const message = document.getElementById("message").value;
+    const rating = document.getElementById("rating").value;
 
-    const id = name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now();
-
-    db.collection("recenzii").doc(id).set({
+    db.collection("recenzii").add({
       name: name,
-      type: type,
       message: message,
       rating: rating,
-      date: new Date()
+      date: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-      document.getElementById("reviewForm").reset();
-      document.getElementById("successMessage").style.display = "block";
-      setTimeout(() => {
-        document.getElementById("successMessage").style.display = "none";
-      }, 5000);
-      afiseazaRecenzii();
-    }).catch((error) => {
-      console.error("Eroare la salvare:", error);
-      alert("Eroare: " + error.message);
-    });
-  });
-
-  function afiseazaRecenzii() {
-    const container = document.getElementById("recenziiContainer");
-    container.innerHTML = "<h2 style='text-align:center;color:#FFC107;'>Recenzii recente</h2>";
-
-    db.collection("recenzii").orderBy("date", "desc").limit(10).get().then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const card = document.createElement("div");
-        card.className = "recenzie";
-
-        card.innerHTML = `
-          <p style="font-size:16px;font-style:italic;">„${data.message}”</p>
-          <p><strong>${data.name}</strong> — ${data.type}</p>
-          <p style="color:#FFD700;font-size:18px;">${"★".repeat(data.rating)}${"☆".repeat(5 - data.rating)}</p>
-          <p style="font-size:12px;color:#777;">${new Date(data.date.toDate()).toLocaleDateString()}</p>
-        `;
-
-        container.appendChild(card);
+      emailjs.send("service_ypfc8wi", "template_yvtix0b", {
+        name: name,
+        message: message,
+        rating: rating,
+        to_email: "contact@energize.ro, borbedarius36@gmail.com"
+      }).then(function(response) {
+        document.getElementById("confirmare").style.display = "block";
+      }, function(error) {
+        alert("Recenzia a fost salvată, dar emailul nu s-a trimis.");
+        console.error("Eroare email:", error);
       });
-    }).catch((error) => {
-      console.error("Eroare la afișare:", error);
     });
   }
-
-  afiseazaRecenzii();
 </script>
 
 </body>
