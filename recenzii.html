@@ -45,6 +45,13 @@
       cursor: pointer;
       font-weight: bold;
     }
+    #successMessage {
+      display: none;
+      text-align: center;
+      color: green;
+      font-weight: bold;
+      margin-top: 20px;
+    }
     #recenziiContainer {
       max-width: 800px;
       margin: 60px auto 40px auto;
@@ -93,6 +100,7 @@
   <button type="submit">Trimite recenzia</button>
 </form>
 
+<div id="successMessage">Recenzia a fost trimisă cu succes!</div>
 <div id="recenziiContainer"></div>
 
 <script>
@@ -117,7 +125,6 @@
     const message = document.getElementById("message").value.trim();
     const rating = parseInt(document.getElementById("rating").value);
 
-    // Generăm un ID unic bazat pe nume și timestamp
     const id = name.replace(/\s+/g, "-").toLowerCase() + "-" + Date.now();
 
     db.collection("recenzii").doc(id).set({
@@ -127,8 +134,11 @@
       rating: rating,
       date: new Date()
     }).then(() => {
-      alert("Recenzia a fost trimisă cu succes!");
       document.getElementById("reviewForm").reset();
+      document.getElementById("successMessage").style.display = "block";
+      setTimeout(() => {
+        document.getElementById("successMessage").style.display = "none";
+      }, 5000);
       afiseazaRecenzii();
     }).catch((error) => {
       console.error("Eroare la salvare:", error);
