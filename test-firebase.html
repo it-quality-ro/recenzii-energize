@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Firebase</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+</head>
+<body>
+  <button onclick="salveaza()">Salvează test</button>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBSQRQRHKeHAjH_22MxqVk-yD9piam3T7A",
+      authDomain: "energize-electrical-service.firebaseapp.com",
+      projectId: "energize-electrical-service",
+      storageBucket: "energize-electrical-service.appspot.com",
+      messagingSenderId: "488528476137",
+      appId: "1:488528476137:web:80527006fad45feae27d78",
+      measurementId: "G-J6HJM5SVCL"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function salveaza() {
+      db.collection("recenzii").add({
+        name: "Test",
+        message: "Funcționează!",
+        rating: 5,
+        date: new Date()
+      }).then(() => {
+        alert("✅ Recenzia a fost salvată!");
+      }).catch((error) => {
+        alert("❌ Eroare: " + error.message);
+        console.error(error);
+      });
+    }
+  </script>
+</body>
+</html>
